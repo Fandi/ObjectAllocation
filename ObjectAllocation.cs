@@ -27,6 +27,8 @@
 			}
 			
 			this.original = original;
+			objectType = original.GetType();
+			
 			allocation = new T[size];
 			State = AllocationState.UNALLOCATED;
 		}
@@ -40,14 +42,15 @@
 			}
 		}
 		
-		public System.Type ObjectType {
+		public int Size {
 			get {
-				if (objectType == default(System.Type)) {
-					objectType = original.GetType();
-				}
-				
-				return objectType;
+				return allocation.Length;
 			}
+		}
+		
+		public System.Type ObjectType {
+			get;
+			private set;
 		}
 		
 		public AllocationState State {
@@ -72,7 +75,7 @@
 			}
 		}
 		
-		public System.Collections.IEnumerator Pool(CoroutinePriority priority = DEFAULT_COROUTINE_PRIORITY, System.Action<T> oninstantiated = default(System.Action<T>), System.Action<ObjectAllocation<T>> onallocated = default(System.Action<ObjectAllocation<T>>)) {
+		public System.Collections.IEnumerator Pool(System.Action<T> oninstantiated = default(System.Action<T>), System.Action<ObjectAllocation<T>> onallocated = default(System.Action<ObjectAllocation<T>>), CoroutinePriority priority = DEFAULT_COROUTINE_PRIORITY) {
 			if (State == AllocationState.ALLOCATED) {
 				throw new UnityEngine.UnityException("Is already allocated");
 			}
@@ -83,14 +86,14 @@
 			
 			for (int i = 0; i < allocation.Length; i++) {
 				allocation[i] = UnityEngine.Object.Instantiate(original) as T;
-			
+				
 				if (oninstantiated != default(System.Action<T>)) {
 					oninstantiated(allocation[i]);
 				}
-			
+				
 				yield return GetYieldInstruction(priority);
 			}
-				
+			
 			State = AllocationState.ALLOCATED;
 			
 			if (onallocated != default(System.Action<ObjectAllocation<T>>)) {
