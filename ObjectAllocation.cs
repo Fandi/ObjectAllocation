@@ -52,24 +52,21 @@
 		internal UnityEngine.YieldInstruction GetYieldInstruction(CoroutinePriority priority) {
 			switch (priority) {
 				case CoroutinePriority.HIGH:
-					return new UnityEngine.WaitForSeconds(0f);
+					return null;
 				case CoroutinePriority.NORMAL:
-					return new UnityEngine.WaitForSeconds(500f);
+					return new UnityEngine.WaitForSeconds(0.25f);
 				case CoroutinePriority.LOW:
-					return new UnityEngine.WaitForSeconds(1000f);
+					return new UnityEngine.WaitForSeconds(0.5f);
 				case CoroutinePriority.WAITFOR_FIXEDUPDATE:
 					return new UnityEngine.WaitForFixedUpdate();
 				case CoroutinePriority.WAITFOR_ENDOFFRAME:
 					return new UnityEngine.WaitForEndOfFrame();
 				default:
-					throw new UnityEngine.UnityException("Unhandled AllocationPriority enum value");
+					throw new UnityEngine.UnityException("Unhandled CoroutinePriority enum value");
 			}
 		}
 		
-		public System.Collections.IEnumerator Pool(
-			CoroutinePriority priority = DEFAULT_COROUTINE_PRIORITY,
-			System.Action<T> oninstantiated = default(System.Action<T>),
-			System.Action<ObjectAllocation<T>> onallocated = default(System.Action<ObjectAllocation<T>>)) {
+		public System.Collections.IEnumerator Pool(CoroutinePriority priority = DEFAULT_COROUTINE_PRIORITY, System.Action<T> oninstantiated = default(System.Action<T>), System.Action<ObjectAllocation<T>> onallocated = default(System.Action<ObjectAllocation<T>>)) {
 			if (IsPooled) {
 				throw new UnityEngine.UnityException("Already pooled");
 			}
@@ -91,8 +88,7 @@
 			}
 		}
 		
-		public System.Collections.IEnumerator Iterate(System.Action<T> oniterating,
-			CoroutinePriority priority = DEFAULT_COROUTINE_PRIORITY) {
+		public System.Collections.IEnumerator Iterate(System.Action<T> oniterating, CoroutinePriority priority = DEFAULT_COROUTINE_PRIORITY) {
 			if (!IsPooled) {
 				throw new UnityEngine.UnityException("Not pooled");
 			}
@@ -108,7 +104,6 @@
 		}
 	}
 	
-    // System.Object and UnityEngine.Object and Belajaran.Object… Oh my!
 	public static class Object {
 		public static ObjectAllocation<T> Allocate<T>(T original, int size)
 			where T : UnityEngine.Object {
