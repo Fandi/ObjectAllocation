@@ -7,6 +7,12 @@
 		WAITFOR_ENDOFFRAME
 	}
 	
+	public enum AllocationState {
+		UNALLOCATED,
+		ALLOCATING,
+		ALLOCATED
+	}
+	
 	public sealed class ObjectAllocation<T>
 		where T : UnityEngine.Object {
 		public const CoroutinePriority DEFAULT_COROUTINE_PRIORITY = CoroutinePriority.WAITFOR_ENDOFFRAME;
@@ -22,7 +28,7 @@
 			
 			this.original = original;
 			allocation = new T[size];
-			IsPooled = false;
+			State = AllocationState.UNALLOCATED;
 		}
 		
 		public T this[int index] {
@@ -44,7 +50,7 @@
 			}
 		}
 		
-		public bool IsPooled {
+		public AllocationState State {
 			get;
 			private set;
 		}
@@ -67,8 +73,12 @@
 		}
 		
 		public System.Collections.IEnumerator Pool(CoroutinePriority priority = DEFAULT_COROUTINE_PRIORITY, System.Action<T> oninstantiated = default(System.Action<T>), System.Action<ObjectAllocation<T>> onallocated = default(System.Action<ObjectAllocation<T>>)) {
-			if (IsPooled) {
-				throw new UnityEngine.UnityException("Already pooled");
+			if (State == AllocationState.ALLOCATED) {
+				throw new UnityEngine.UnityException("Is already allocated");
+			}
+			
+			if (State == AllocationState.ALLOCATING) {
+				throw new UnityEngine.UnityException("Is allocating");
 			}
 			
 			for (int i = 0; i < allocation.Length; i++) {
@@ -81,7 +91,7 @@
 				yield return GetYieldInstruction(priority);
 			}
 				
-			IsPooled = true;
+			State = AllocationState.ALLOCATED;
 			
 			if (onallocated != default(System.Action<ObjectAllocation<T>>)) {
 				onallocated(this);
@@ -89,8 +99,8 @@
 		}
 		
 		public System.Collections.IEnumerator Iterate(System.Action<T> oniterating, CoroutinePriority priority = DEFAULT_COROUTINE_PRIORITY) {
-			if (!IsPooled) {
-				throw new UnityEngine.UnityException("Not pooled");
+			if (State != AllocationState.ALLOCATED) {
+				throw new UnityEngine.UnityException("Is not allocated yet");
 			}
 			
 			if (oniterating == default(System.Action<T>)) {
