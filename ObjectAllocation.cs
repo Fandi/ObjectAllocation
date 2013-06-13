@@ -84,6 +84,8 @@
 				throw new UnityEngine.UnityException("Is allocating");
 			}
 			
+			State = AllocationState.ALLOCATING;
+			
 			for (int i = 0; i < allocation.Length; i++) {
 				allocation[i] = UnityEngine.Object.Instantiate(original) as T;
 				
