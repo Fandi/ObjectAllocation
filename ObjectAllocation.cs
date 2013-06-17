@@ -19,7 +19,6 @@
 		
 		T original;
 		T[] allocation;
-		System.Type objectType;
 		
 		public ObjectAllocation(T original, int size) {
 			if (original == default(T)) {
@@ -27,7 +26,7 @@
 			}
 			
 			this.original = original;
-			objectType = original.GetType();
+			ObjectType = original.GetType();
 			
 			allocation = new T[size];
 			State = AllocationState.UNALLOCATED;
